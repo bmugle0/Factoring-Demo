@@ -3,8 +3,6 @@ use std::{thread, env};
 
 fn main() {
     let num: i64 = get_argument().expect("Error");
-
-    //let num: i64 = -90000;
     
     let result = start_threads(num, 10);
     println!("{:?}", result);
@@ -40,20 +38,32 @@ fn find_factors(num: i64, range: std::ops::RangeInclusive<i64>) -> Vec<(i64, i64
     result
 }
 
-fn start_threads(num: i64, threads: i64) -> Vec<(i64, i64)>{    
-    let mut parts: Vec<i64> = vec![];
-    parts.append(&mut (0..=threads.abs())
+fn split_work(num: i64, threads: i64) -> (Vec<i64>, i64) {
+    let flt_num: f64 = num as f64;
+    
+    let flt_threads = if threads > num {flt_num} else {threads as f64};
+    
+    let mut result: Vec<i64> = vec![];
+    result.append(&mut (0..=(flt_threads.abs() as i64))
         .into_iter()
-        .map(|i| i * ((num.abs().isqrt()+3)/threads))
+        .map(
+            |i| (i as f64 * ((flt_num.abs().sqrt())/flt_threads)) as i64
+        )
         .collect::<Vec<i64>>());
-        println!("{:?}", parts);
-        
+        (result, flt_threads as i64)
+}
+
+fn start_threads(num: i64, threads: i64) -> Vec<(i64, i64)>{    
+    let (parts, new_threads) = split_work(num, threads);
+    //Uncomment below to see the intervals that are given to the seperate threads.
+    //dbg!(&parts);
+    
     let (tx, rx) = mpsc::channel();
     
-    for i in 0..=threads-2 {
+    for i in 0..=new_threads-2 {
         start_single_thread(num, parts[i as usize]+1, parts[(i+1) as usize], tx.clone());
     }
-    start_single_thread(num, parts[(threads-1) as usize]+1, parts[threads as usize], tx);
+    start_single_thread(num, parts[(new_threads-1) as usize]+1, parts[new_threads as usize], tx);
         
     append_results(rx)
 }
