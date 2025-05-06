@@ -1,11 +1,27 @@
 use std::sync::mpsc;
-use std::thread;
+use std::{thread, env};
 
 fn main() {
-    let num: i64 = -9000000000000000000;
+    let num: i64 = get_argument().expect("Error");
+
+    //let num: i64 = -90000;
     
     let result = start_threads(num, 10);
     println!("{:?}", result);
+}
+
+fn get_argument() -> Result<i64, &'static str> {
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        return Err("Not enough arguments. Please enter a number.")
+    }
+    if args.len() > 2 {
+        return Err("Too many arguments. Please enter a number.")
+    }
+    match &args[1].parse::<i64>() {
+        Ok(num) => Ok(*num),
+        Err(_) => Err("Failure parsing value. Please enter a number.")
+    }
 }
 
 fn find_factors(num: i64, range: std::ops::RangeInclusive<i64>) -> Vec<(i64, i64)> {
