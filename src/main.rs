@@ -41,7 +41,7 @@ fn find_factors(num: i64, range: std::ops::RangeInclusive<i64>) -> Vec<(i64, i64
 fn split_work(num: i64, threads: i64) -> (Vec<i64>, i64) {
     let flt_num: f64 = num as f64;
     
-    let flt_threads = if threads > num {flt_num} else {threads as f64};
+    let flt_threads = if threads > num.abs() {flt_num.abs()} else {threads as f64};
     
     let mut result: Vec<i64> = vec![];
     result.append(&mut (0..=(flt_threads.abs() as i64))
