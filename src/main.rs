@@ -3,8 +3,13 @@ use std::{thread, env};
 
 fn main() {
     let num: i64 = get_argument().expect("Error");
+    let threads: i64 = match env::var("THREADS") {
+        Ok(val) => val.parse::<i64>().expect("Please enter a valid integer for THREADS"),
+        Err(_) => 10,
+    };
+    dbg!(threads);
     
-    let result = start_threads(num, 10);
+    let result = start_threads(num, threads);
     println!("{:?}", result);
 }
 
